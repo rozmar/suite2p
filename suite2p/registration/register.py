@@ -331,10 +331,11 @@ def register_binary(ops: Dict[str, Any], refImg=None, raw=True):
         ops['nframes'] = int(nbytes / (2 * ops['Ly'] * ops['Lx'])) # this equation is only true with int16 :)
 
     print('registering %d frames'%ops['nframes'])
-    if ops['nframes'] < 50:
-        raise ValueError('the total number of frames should be at least 50.')
-    if ops['nframes'] < 200:
-        print('WARNING: number of frames is below 200, unpredictable behaviors may occur.')
+    if refImg is None:
+        if ops['nframes'] < 50:
+            raise ValueError('the total number of frames should be at least 50.')
+        if ops['nframes'] < 200:
+            print('WARNING: number of frames is below 200, unpredictable behaviors may occur.')
 
     # get binary file paths
     raw = raw and ops.get('keep_movie_raw') and 'raw_file' in ops and path.isfile(ops['raw_file'])
