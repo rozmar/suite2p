@@ -332,7 +332,8 @@ def register_binary(ops: Dict[str, Any], refImg=None, raw=True):
 
     print('registering %d frames'%ops['nframes'])
     if ops['nframes'] < 50:
-        raise ValueError('the total number of frames should be at least 50.')
+        #raise ValueError('the total number of frames should be at least 50.')
+        print('the total number of frames should be at least 50.')
     if ops['nframes'] < 200:
         print('WARNING: number of frames is below 200, unpredictable behaviors may occur.')
 
