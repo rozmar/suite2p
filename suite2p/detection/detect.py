@@ -19,25 +19,25 @@ except Exception as e:
     CELLPOSE_INSTALLED = False
 
 
-def detect(ops, classfile=None):
+def detect(ops, classfile=None, mov = None):
     
     if 'aspect' in ops:
         dy, dx = int(ops['aspect'] * 10), 10
     else:
         d0 = ops['diameter']
         dy, dx = (d0, d0) if isinstance(d0, int) else d0
-
-    t0 = time.time()
-    bin_size = int(max(1, ops['nframes'] // ops['nbinned'], np.round(ops['tau'] * ops['fs'])))
-    print('Binning movie in chunks of length %2.2d' % bin_size)
-    with BinaryFile(read_filename=ops['reg_file'], Ly=ops['Ly'], Lx=ops['Lx']) as f:
-        mov = f.bin_movie(
-            bin_size=bin_size,
-            bad_frames=ops.get('badframes'),
-            y_range=ops['yrange'],
-            x_range=ops['xrange'],
-        )
-    print('Binned movie [%d,%d,%d] in %0.2f sec.' % (mov.shape[0], mov.shape[1], mov.shape[2], time.time() - t0))
+    if mov is None:
+        t0 = time.time()
+        bin_size = int(max(1, ops['nframes'] // ops['nbinned'], np.round(ops['tau'] * ops['fs'])))
+        print('Binning movie in chunks of length %2.2d' % bin_size)
+        with BinaryFile(read_filename=ops['reg_file'], Ly=ops['Ly'], Lx=ops['Lx']) as f:
+            mov = f.bin_movie(
+                bin_size=bin_size,
+                bad_frames=ops.get('badframes'),
+                y_range=ops['yrange'],
+                x_range=ops['xrange'],
+            )
+        print('Binned movie [%d,%d,%d] in %0.2f sec.' % (mov.shape[0], mov.shape[1], mov.shape[2], time.time() - t0))
     if ops.get('inverted_activity', False):
         mov -= mov.min()
         mov *= -1
