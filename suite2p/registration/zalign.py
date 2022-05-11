@@ -205,3 +205,94 @@ def compute_zpos(Zreg, ops):
     reg_file.close()
     ops_orig['zcorr'] = zcorr
     return ops_orig, zcorr
+    
+def compute_zpos_single_frame(Zreg, frame,ops):
+    """ compute z position of frames given z-stack Zreg
+
+    Parameters
+    ---------- 
+
+    Zreg : 3D array
+        size [nplanes x Ly x Lx], z-stack
+
+    ops : dictionary
+        'reg_file' <- binary to register to z-stack, 'smooth_sigma',
+        'Ly', 'Lx', 'batch_size'
+
+    Returns
+    -------
+    ops_orig
+    zcorr
+    """
+    if 'reg_file' not in ops:
+        raise IOError('no binary specified')
+
+    
+    Ly = ops['Ly']
+    Lx = ops['Lx']
+
+    ops_orig = ops.copy()
+    ops['nonrigid'] = False
+    nplanes, zLy, zLx = Zreg.shape
+    if Zreg.shape[1] > Ly or Zreg.shape[2] != Lx:
+        Zreg = Zreg[:, ]
+
+    nFrames = 1
+
+    reg_file = open(ops['reg_file'], 'rb')
+    refAndMasks = []
+    for Z in Zreg:
+        if ops['1Preg']:
+            Z = Z.astype(np.float32)
+            Z = Z[np.newaxis, :, :]
+            if ops['pre_smooth']:
+                Z = utils.spatial_smooth(Z, int(ops['pre_smooth']))
+            Z = utils.spatial_high_pass(Z, int(ops['spatial_hp_reg']))
+            Z = Z.squeeze()
+
+        maskMul, maskOffset = rigid.compute_masks(
+            refImg=Z,
+            maskSlope=ops['spatial_taper'] if ops['1Preg'] else 3 * ops['smooth_sigma'],
+        )
+        cfRefImag = rigid.phasecorr_reference(
+            refImg=Z,
+            smooth_sigma=ops['smooth_sigma'])
+        cfRefImag = cfRefImag[np.newaxis, :, :]
+        refAndMasks.append((maskMul, maskOffset, cfRefImag))
+
+    zcorr = np.zeros((Zreg.shape[0], nFrames), np.float32)
+    t0 = time.time()
+    k = 0
+    nfr = 0
+    
+    data = np.float32(frame)
+    inds = np.arange(nfr, nfr+data.shape[0], 1, int)
+    
+    for z,ref in enumerate(refAndMasks):
+
+        # preprocessing for 1P recordings
+        if ops['1Preg']:
+            data = data.astype(np.float32)
+
+            if ops['pre_smooth']:
+                data = utils.spatial_smooth(data, int(ops['pre_smooth']))
+            data = utils.spatial_high_pass(data, int(ops['spatial_hp_reg']))
+
+        maskMul, maskOffset, cfRefImg = ref
+        cfRefImg = cfRefImg.squeeze()
+
+        _, _, zcorr[z, inds] = rigid.phasecorr(
+            data=rigid.apply_masks(data=data, maskMul=maskMul, maskOffset=maskOffset),
+            cfRefImg=cfRefImg,
+            maxregshift=ops['maxregshift'],
+            smooth_sigma_time=ops['smooth_sigma_time'],
+        )
+        if z%10 == 1:
+            print('%d planes, %d/%d frames, %0.2f sec.'%(z, nfr, ops['nframes'], time.time()-t0))
+    print('%d planes, %d/%d frames, %0.2f sec.'%(z, nfr, ops['nframes'], time.time()-t0))
+    nfr += data.shape[0]
+    k+=1
+
+    reg_file.close()
+    ops_orig['zcorr'] = zcorr
+    return ops_orig, zcorr
