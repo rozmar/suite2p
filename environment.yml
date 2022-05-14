@@ -27,4 +27,3 @@ dependencies:
     - paramiko
     - pynwb
     - sbxreader
-    - suite2p
