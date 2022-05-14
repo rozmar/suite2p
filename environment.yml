@@ -1,4 +1,4 @@
-name: suite2p
+name: bci_with_suite2p
 channels:
   - pytorch
   - numba
