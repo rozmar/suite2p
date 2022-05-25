@@ -378,7 +378,10 @@ def register_binary(ops: Dict[str, Any], refImg=None, raw=True):
     refAndMasks = compute_reference_masks(refImg, ops)
     
     ### ------------- register binary to reference image ------------ ###
-    good_frames = ~ops['badframes'] if ops['badframes'] is not None else np.ones(ops['nframes'], dtype=bool)
+    if 'badframes' in ops.keys():
+        good_frames = ~ops['badframes'] if ops['badframes'] is not None else np.ones(ops['nframes'], dtype=bool)
+    else:
+        good_frames=np.ones(ops['nframes'], dtype=bool)
     mean_img = np.zeros((ops['Ly'], ops['Lx']))
     rigid_offsets, nonrigid_offsets = [], []
     with io.BinaryFile(Ly=ops['Ly'], Lx=ops['Lx'],
@@ -386,6 +389,7 @@ def register_binary(ops: Dict[str, Any], refImg=None, raw=True):
                        write_filename=reg_file_align) as f:
         t0 = time.time()
         for k, (_, frames) in enumerate(f.iter_frames(batch_size=ops['batch_size'])):
+            
             frames, ymax, xmax, cmax, ymax1, xmax1, cmax1 = register_frames(refAndMasks, frames, ops)
             
             rigid_offsets.append([ymax, xmax, cmax])
