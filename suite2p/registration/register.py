@@ -390,13 +390,34 @@ def register_binary(ops: Dict[str, Any], refImg=None, raw=True):
         t0 = time.time()
         for k, (_, frames) in enumerate(f.iter_frames(batch_size=ops['batch_size'])):
             
-            frames, ymax, xmax, cmax, ymax1, xmax1, cmax1 = register_frames(refAndMasks, frames, ops)
+            good_indices = good_frames[_]
+            if sum(good_indices)<len(good_indices):
+                frames_, ymax_, xmax_, cmax_, ymax1_, xmax1_, cmax1_ = register_frames(refAndMasks, frames[good_indices,:,:], ops)
+                
+                frames[good_indices,:,:] = frames_
+                ymax = np.zeros(len(good_indices))
+                xmax = np.zeros(len(good_indices))
+                cmax = np.zeros(len(good_indices))
+                
+                ymax[good_indices] = ymax_
+                xmax[good_indices] = xmax_
+                cmax[good_indices] = cmax_
+                
+                ymax1 = np.zeros([len(good_indices),ymax1_.shape[1]])
+                xmax1 = np.zeros([len(good_indices),xmax1_.shape[1]])
+                cmax1 = np.zeros([len(good_indices),cmax1_.shape[1]])
+                
+                cmax1[good_indices,:] = cmax1_
+                xmax1[good_indices,:] = xmax1_
+                ymax1[good_indices,:] = ymax1_
+            else:
+                frames, ymax, xmax, cmax, ymax1, xmax1, cmax1 = register_frames(refAndMasks, frames[good_indices,:,:], ops)
             
             rigid_offsets.append([ymax, xmax, cmax])
             if ops['nonrigid']:
                 nonrigid_offsets.append([ymax1, xmax1, cmax1])
             
-            good_indices = good_frames[_]
+            
 
             mean_img += frames[good_indices,:,:].sum(axis=0) / ops['nframes']
 
