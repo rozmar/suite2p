@@ -392,6 +392,7 @@ def register_binary(ops: Dict[str, Any], refImg=None, raw=True):
             
             good_indices = good_frames[_]
             if sum(good_indices)<len(good_indices):
+                print('skipping the registration of badframes')
                 frames_, ymax_, xmax_, cmax_, ymax1_, xmax1_, cmax1_ = register_frames(refAndMasks, frames[good_indices,:,:], ops)
                 
                 frames[good_indices,:,:] = frames_
