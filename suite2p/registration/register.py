@@ -378,7 +378,7 @@ def register_binary(ops: Dict[str, Any], refImg=None, raw=True):
     refAndMasks = compute_reference_masks(refImg, ops)
     
     ### ------------- register binary to reference image ------------ ###
-
+    good_frames = ~ops['badframes'] if ops['badframes'] is not None else np.ones(ops['nframes'], dtype=bool)
     mean_img = np.zeros((ops['Ly'], ops['Lx']))
     rigid_offsets, nonrigid_offsets = [], []
     with io.BinaryFile(Ly=ops['Ly'], Lx=ops['Lx'],
@@ -391,8 +391,10 @@ def register_binary(ops: Dict[str, Any], refImg=None, raw=True):
             rigid_offsets.append([ymax, xmax, cmax])
             if ops['nonrigid']:
                 nonrigid_offsets.append([ymax1, xmax1, cmax1])
+            
+            good_indices = good_frames[_]
 
-            mean_img += frames.sum(axis=0) / ops['nframes']
+            mean_img += frames[good_indices,:,:].sum(axis=0) / ops['nframes']
 
             f.write(frames)
             if (ops['reg_tif'] if ops['functional_chan'] == ops['align_by_chan'] else ops['reg_tif_chan2']):
