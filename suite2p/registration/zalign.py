@@ -237,9 +237,9 @@ def compute_zpos_single_frame(Zreg, frame,ops):
     if Zreg.shape[1] > Ly or Zreg.shape[2] != Lx:
         Zreg = Zreg[:, ]
 
-    nFrames = 1
+    nFrames = frame.shape[0]
 
-    reg_file = open(ops['reg_file'], 'rb')
+    #reg_file = open(ops['reg_file'], 'rb')
     refAndMasks = []
     for Z in Zreg:
         if ops['1Preg']:
@@ -281,7 +281,7 @@ def compute_zpos_single_frame(Zreg, frame,ops):
         maskMul, maskOffset, cfRefImg = ref
         cfRefImg = cfRefImg.squeeze()
 
-        _, _, zcorr[z, inds] = rigid.phasecorr(
+        y, x, zcorr[z, inds] = rigid.phasecorr(
             data=rigid.apply_masks(data=data, maskMul=maskMul, maskOffset=maskOffset),
             cfRefImg=cfRefImg,
             maxregshift=ops['maxregshift'],
@@ -293,6 +293,6 @@ def compute_zpos_single_frame(Zreg, frame,ops):
     nfr += data.shape[0]
     k+=1
 
-    reg_file.close()
+    #reg_file.close()
     ops_orig['zcorr'] = zcorr
     return ops_orig, zcorr

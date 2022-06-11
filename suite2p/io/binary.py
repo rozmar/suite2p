@@ -281,19 +281,18 @@ class BinaryFile:
         for indices, data in self.iter_frames(batch_size=batch_size):
             if len(data) != batch_size:
                 break
-
+            
             if x_range is not None and y_range is not None:
                 data = data[:, slice(*y_range), slice(*x_range)]  # crop
-
             good_indices = good_frames[indices]
             if np.mean(good_indices) > reject_threshold:
                 data = data[good_indices]
-
+    
             if data.shape[0] > bin_size:
                 data = binned_mean(mov=data, bin_size=bin_size)
                 batches.extend(data)
-
-        mov = np.stack(batches)
+    
+            mov = np.stack(batches)
         return mov
 
 
