@@ -5,7 +5,7 @@ from warnings import warn
 
 import numpy as np
 from scipy.signal import medfilt, medfilt2d
-
+import cv2
 from .. import io
 from . import bidiphase, utils, rigid, nonrigid
 
@@ -359,6 +359,8 @@ def register_binary(ops: Dict[str, Any], refImg=None, raw=True):
         # shift frames
         if refImg is None and ops['bidiphase'] != 0:
             bidiphase.shift(frames, int(ops['bidiphase'])) 
+    
+    
 
     if refImg is not None:
         print('NOTE: user reference frame given')
@@ -389,7 +391,9 @@ def register_binary(ops: Dict[str, Any], refImg=None, raw=True):
                        write_filename=reg_file_align) as f:
         t0 = time.time()
         for k, (_, frames) in enumerate(f.iter_frames(batch_size=ops['batch_size'])):
-            
+            ## add rotation here
+            if 'rotation_matrix' in ops.keys():
+                refImg = cv2.warpAffine(refImg, ops['rotation_matrix'], (ops['Ly'], ops['Lx']), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP);
             good_indices = good_frames[_]
             if sum(good_indices)<len(good_indices):
                 print('skipping the registration of badframes')
