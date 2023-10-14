@@ -7,7 +7,7 @@ install_deps = ['importlib-metadata',
         'scanimage-tiff-reader>=1.4.1',
         'torch>=1.7.1',
         'paramiko',
-        'numpy==1.22',#>=1.16',
+        'numpy>=1.16',#==1.22',#
         'numba>=0.43.1',
         'matplotlib',
         'scipy>=1.4.0',
@@ -34,7 +34,7 @@ test_deps = [
       'pytest-qt==3.3.0',
     ]
 bci_deps = [
-    'opencv-python==4.5.5.64']
+    'opencv-python']#==4.5.5.64']
 
 all_deps = gui_deps + data_deps + nwb_deps + bci_deps
 
