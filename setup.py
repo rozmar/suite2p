@@ -34,7 +34,7 @@ test_deps = [
       'pytest-qt==3.3.0',
     ]
 bci_deps = [
-    'opencv-python']
+    'opencv-python==4.5.5.64']
 
 all_deps = gui_deps + data_deps + nwb_deps + bci_deps
 
