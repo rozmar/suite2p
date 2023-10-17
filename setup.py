@@ -7,7 +7,7 @@ install_deps = ['importlib-metadata',
         'scanimage-tiff-reader>=1.4.1',
         'torch>=1.7.1',
         'paramiko',
-        'numpy>=1.16',#==1.22',#
+        'numpy==1.22.1, #original:>=1.16'
         'numba>=0.43.1',
         'matplotlib',
         'scipy>=1.4.0',
