@@ -199,7 +199,8 @@ def run_plane(ops, ops_path=None, stat=None):
         t11=time.time()
         print('----------- REGISTRATION')
         refImg = ops['refImg'] if 'refImg' in ops and ops.get('force_refImg', False) else None
-        ops = registration.register_binary(ops, refImg=refImg) # register binary
+        refImg_nonrigid = ops['refImg_nonrigid'] if 'refImg_nonrigid' in ops and ops.get('force_refImg', False) else None
+        ops = registration.register_binary(ops, refImg=refImg,refImg_nonrigid=refImg_nonrigid) # register binary
         np.save(ops['ops_path'], ops)
         plane_times['registration'] = time.time()-t11
         print('----------- Total %0.2f sec' % plane_times['registration'])
