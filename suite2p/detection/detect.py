@@ -19,7 +19,7 @@ except Exception as e:
     CELLPOSE_INSTALLED = False
 
 
-def detect(ops, classfile=None, mov = None):
+def detect(ops, classfile=None, mov = None, stat = None):
     
     if 'aspect' in ops:
         dy, dx = int(ops['aspect'] * 10), 10
@@ -63,7 +63,7 @@ def detect(ops, classfile=None, mov = None):
                     Lx=ops['Lx'],
                     diameter=ops['diameter'])
         
-    else:            
+    else:
         stat = select_rois(
             ops=ops,
             mov=mov,
@@ -75,7 +75,10 @@ def detect(ops, classfile=None, mov = None):
             sparse_mode=ops['sparse_mode'],
             do_crop=ops['soma_crop'],
             classfile=classfile,
+            stat = stat,
         )
+
+            
 
     # if second channel, detect bright cells in second channel
     if 'meanImg_chan2' in ops:
@@ -88,23 +91,39 @@ def detect(ops, classfile=None, mov = None):
 
 def select_rois(ops: Dict[str, Any], mov: np.ndarray, dy: int, dx: int, Ly: int, Lx: int, 
                 max_overlap: float = True, sparse_mode: bool = True, do_crop: bool=True,
-                classfile: Path = None):
+                classfile: Path = None, stat = None):
     
     t0 = time.time()
     if sparse_mode:
         ops.update({'Lyc': mov.shape[1], 'Lxc': mov.shape[2]})
-        new_ops, stat = sparsedetect.sparsery(
-            mov=mov,
-            high_pass=ops['high_pass'],
-            neuropil_high_pass=ops['spatial_hp_detect'],
-            batch_size=ops['batch_size'],
-            spatial_scale=ops['spatial_scale'],
-            threshold_scaling=ops['threshold_scaling'],
-            max_iterations=250 * ops['max_iterations'],
-            yrange=ops['yrange'],
-            xrange=ops['xrange'],
-            percentile=ops.get('active_percentile', 0.0),
-        )
+        if stat is None:
+            new_ops, stat = sparsedetect.sparsery(
+                mov=mov,
+                high_pass=ops['high_pass'],
+                neuropil_high_pass=ops['spatial_hp_detect'],
+                batch_size=ops['batch_size'],
+                spatial_scale=ops['spatial_scale'],
+                threshold_scaling=ops['threshold_scaling'],
+                max_iterations=250 * ops['max_iterations'],
+                yrange=ops['yrange'],
+                xrange=ops['xrange'],
+                percentile=ops.get('active_percentile', 0.0),
+            )
+        else:
+            new_ops, stat = sparsedetect.sparsery_with_seeds(
+                mov=mov,
+                high_pass=ops['high_pass'],
+                neuropil_high_pass=ops['spatial_hp_detect'],
+                batch_size=ops['batch_size'],
+                spatial_scale=ops['spatial_scale'],
+                threshold_scaling=ops['threshold_scaling'],
+                max_iterations=250 * ops['max_iterations'],
+                yrange=ops['yrange'],
+                xrange=ops['xrange'],
+                percentile=ops.get('active_percentile', 0.0),
+                stat=stat,
+            )
+            
         ops.update(new_ops)
     else:
         ops, stat = sourcery.sourcery(mov=mov, ops=ops)
