@@ -536,6 +536,8 @@ def sparsery_with_seeds(mov: np.ndarray, high_pass: int, neuropil_high_pass: int
         imap = int(stat[tj]['footprint']) # uses previous footprint
         
         med = [int(yi), int(xi)]
+        
+        
                 
         # check if peak is larger than threshold * max(1,nbinned/1200)
         # v_max[tj] = v0max.max()
@@ -547,10 +549,20 @@ def sparsery_with_seeds(mov: np.ndarray, high_pass: int, neuropil_high_pass: int
 
         # make square of initial pixels based on spatial scale of peak
         yi, xi = int(yi), int(xi)
+        if yi<0:
+            yi = 0
+        elif yi>=Lyc:
+            yi = Lyc-1
+        if xi<0:
+            xi = 0
+        elif xi>=Lxc:
+            xi = Lxc-1
         ypix0, xpix0, lam0 = add_square(yi, xi, ls, Lyc, Lxc)
         
         # project movie into square to get time series
+
         tproj = (mov[:, ypix0*Lxc + xpix0] * lam0[0]).sum(axis=-1)
+
         if percentile > 0:
             threshold = min(Th2, np.percentile(tproj, percentile))
         else:
