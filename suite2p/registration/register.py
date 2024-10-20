@@ -416,7 +416,7 @@ def register_binary(ops: Dict[str, Any], refImg=None, refImg_nonrigid=None,raw=T
             ## add rotation here
             if 'rotation_matrix' in ops.keys():
                 for frame in frames:
-                    frame[:] = cv2.warpAffine(frame, ops['rotation_matrix'], (ops['Lx'], ops['Ly']), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP);
+                    frame[:] = cv2.warpAffine(frame, ops['rotation_matrix'], (ops['Ly'], ops['Lx']), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP);
             good_indices = good_frames[_]
             if sum(good_indices)<len(good_indices):
                 print('skipping the registration of badframes')
