@@ -115,10 +115,13 @@ def create_neuropil_masks(ypixs, xpixs, cell_pix, inner_neuropil_radius, min_neu
             if circular:
                 ypix1, xpix1 = extendROI(ypix1, xpix1, Ly, Lx, extend_by)  # keep extending
             else:
-                ypix1, xpix1 = np.meshgrid(np.arange(max(0, ypix1.min() - extend_by), min(Ly, ypix1.max() + extend_by + 1), 1, int), 
-                                           np.arange(max(0, xpix1.min() - extend_by), min(Lx, xpix1.max() + extend_by + 1), 1, int),
-                                           indexing='ij')
-            
+                try:
+                    ypix1, xpix1 = np.meshgrid(np.arange(max(0, ypix1.min() - extend_by), min(Ly, ypix1.max() + extend_by + 1), 1, int), 
+                                               np.arange(max(0, xpix1.min() - extend_by), min(Lx, xpix1.max() + extend_by + 1), 1, int),
+                                               indexing='ij')
+                except:
+                    print('neuropil mask extension error')
+                    pass
         ix = valid_pixels(cell_pix, ypix1, xpix1)
         neuropil_mask[ypix1[ix], xpix1[ix]] = True
         neuropil_mask[ypix, xpix] = False
